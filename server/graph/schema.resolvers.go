@@ -11,21 +11,75 @@ import (
 	"github.com/K-Kizuku/pymon-graphql/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// User is the resolver for the user field.
+func (r *pythonResolver) User(ctx context.Context, obj *model.Python) (*model.User, error) {
+	fmt.Println("hi")
+	return &model.User{
+		ID:   obj.UserID,
+		Name: "hoge",
+	}, nil
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// Stats is the resolver for the stats field.
+func (r *pythonResolver) Stats(ctx context.Context, obj *model.Python) (*model.PythonStats, error) {
+	panic(fmt.Errorf("not implemented: Stats - stats"))
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Skills is the resolver for the skills field.
+func (r *pythonResolver) Skills(ctx context.Context, obj *model.Python) ([]*model.PythonSkill, error) {
+	panic(fmt.Errorf("not implemented: Skills - skills"))
+}
+
+// Me is the resolver for the me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: Me - me"))
+}
+
+// Python is the resolver for the python field.
+func (r *queryResolver) Python(ctx context.Context) (*model.Python, error) {
+	python := &model.Python{
+		ID:         "1",
+		Name:       "Charmander",
+		Exp:        0,
+		Repository: "yamato0211/pymon-graphql",
+		UserID:     "1",
+		Stats: &model.PythonStats{
+			Hp:      39,
+			Attack:  52,
+			Defense: 43,
+			Speed:   65,
+		},
+		Skills: []*model.PythonSkill{
+			{
+				ID:          "1",
+				Name:        "Scratch",
+				Description: "A normal attack move.",
+				Pp:          35,
+				Attack:      40,
+				HitRate:     100,
+				MinVersion:  "1.0.0",
+				MaxVersion:  "1.0.0",
+			},
+			{
+				ID:          "2",
+				Name:        "Ember",
+				Description: "A fire attack move.",
+				Pp:          25,
+				Attack:      40,
+				HitRate:     100,
+				MinVersion:  "1.0.0",
+				MaxVersion:  "1.0.0",
+			},
+		},
+	}
+	return python, nil
+}
+
+// Python returns PythonResolver implementation.
+func (r *Resolver) Python() PythonResolver { return &pythonResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
+type pythonResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

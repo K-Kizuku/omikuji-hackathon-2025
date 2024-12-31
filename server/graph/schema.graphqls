@@ -1,28 +1,37 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
-
 type User {
   id: ID!
   name: String!
 }
 
+type Python {
+  id: ID!
+  name: String!
+  exp: Int!
+  repository: String!
+  user: User!
+  stats: PythonStats!
+  skills: [PythonSkill!]!
+}
+
+type PythonStats {
+  hp: Int!
+  attack: Int!
+  defense: Int!
+  speed: Int!
+}
+
+type PythonSkill {
+  id: ID!
+  name: String!
+  description: String!
+  pp: Int!
+  attack: Int!
+  hitRate: Int!
+  minVersion: String!
+  maxVersion: String!
+}
+
 type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  me: User!
+  python: Python!
 }

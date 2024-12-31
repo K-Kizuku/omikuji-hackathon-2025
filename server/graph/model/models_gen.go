@@ -2,22 +2,25 @@
 
 package model
 
-type Mutation struct {
+type PythonSkill struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Pp          int32  `json:"pp"`
+	Attack      int32  `json:"attack"`
+	HitRate     int32  `json:"hitRate"`
+	MinVersion  string `json:"minVersion"`
+	MaxVersion  string `json:"maxVersion"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type PythonStats struct {
+	Hp      int32 `json:"hp"`
+	Attack  int32 `json:"attack"`
+	Defense int32 `json:"defense"`
+	Speed   int32 `json:"speed"`
 }
 
 type Query struct {
-}
-
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
 }
 
 type User struct {
