@@ -1,7 +1,6 @@
 type User {
   id: ID!
   name: String!
-  Python: Python!
 }
 
 type Python {
@@ -22,7 +21,7 @@ type PythonStats {
 }
 
 type PythonSkill {
-  id: ID!
+  id: Int!
   name: String!
   description: String!
   pp: Int!

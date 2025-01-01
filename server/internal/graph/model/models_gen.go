@@ -3,12 +3,12 @@
 package model
 
 type PythonSkill struct {
-	ID          string `json:"id"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Pp          int32  `json:"pp"`
-	Attack      int32  `json:"attack"`
-	HitRate     int32  `json:"hitRate"`
+	Pp          int    `json:"pp"`
+	Attack      int    `json:"attack"`
+	HitRate     int    `json:"hitRate"`
 	MinVersion  string `json:"minVersion"`
 	MaxVersion  string `json:"maxVersion"`
 }
