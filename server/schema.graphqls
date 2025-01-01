@@ -36,9 +36,11 @@ type Time {
   timeStamp: String!
 }
 
+directive @isAuthenticated on FIELD_DEFINITION
+
 type Query {
-  me: User!
-  python: Python!
+  me: User! @isAuthenticated
+  python: Python! @isAuthenticated
 }
 
 type Subscription {
