@@ -29,3 +29,13 @@ func NewDBConfig() *DBConfig {
 		UseTLS:   cmp.Or(os.Getenv("MYSQL_TLS"), "false"),
 	}
 }
+
+type AppConfig struct {
+	FirebaseSecret string
+}
+
+func NewAppConfig() *AppConfig {
+	return &AppConfig{
+		FirebaseSecret: cmp.Or(os.Getenv("FIREBASE_SECRET"), ""),
+	}
+}

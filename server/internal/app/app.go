@@ -13,10 +13,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/K-Kizuku/pymon-graphql/internal/app/repository"
 	"github.com/K-Kizuku/pymon-graphql/internal/graph"
+	"github.com/K-Kizuku/pymon-graphql/internal/graph/directive"
+	"github.com/K-Kizuku/pymon-graphql/internal/middlewares/auth"
 	"github.com/K-Kizuku/pymon-graphql/pkg/config"
 	"github.com/K-Kizuku/pymon-graphql/pkg/db"
+	"github.com/K-Kizuku/pymon-graphql/pkg/firebase"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddle "github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -31,7 +34,13 @@ func Run() {
 	}
 
 	// DI
+	appConfig := config.NewAppConfig()
 	dbConfig := config.NewDBConfig()
+	firebaseClient, err := firebase.NewAuthApp(appConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	authMiddleware := auth.NewAuthMiddleware(firebaseClient)
 	db := db.NewDB(dbConfig)
 	userRepo := repository.NewUserRepository(db)
 	pythonRepo := repository.NewPythonRepository(db)
@@ -41,8 +50,8 @@ func Run() {
 	router := chi.NewRouter()
 
 	// Middleware
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Logger)
+	router.Use(chiMiddle.Recoverer)
+	router.Use(chiMiddle.Logger)
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedHeaders:   []string{"*"},
@@ -51,12 +60,15 @@ func Run() {
 		Debug:            true,
 	}).Handler)
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		UserRepository:        userRepo,
-		PythonRepository:      pythonRepo,
-		PythonStatRepository:  pythonStatRepo,
-		PythonSkillRepository: pythonSkillRepo,
-	}}))
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
+		Resolvers: &graph.Resolver{
+			UserRepository:        userRepo,
+			PythonRepository:      pythonRepo,
+			PythonStatRepository:  pythonStatRepo,
+			PythonSkillRepository: pythonSkillRepo,
+		},
+		Directives: directive.Directive,
+	}))
 
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
@@ -78,11 +90,10 @@ func Run() {
 	})
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", srv)
+	router.Handle("/query", authMiddleware(srv))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	err := http.ListenAndServe(":"+port, router)
-	if err != nil {
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatal(err)
 	}
 }
