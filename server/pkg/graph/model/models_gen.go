@@ -13,13 +13,6 @@ type PythonSkill struct {
 	MaxVersion  string `json:"maxVersion"`
 }
 
-type PythonStats struct {
-	Hp      int32 `json:"hp"`
-	Attack  int32 `json:"attack"`
-	Defense int32 `json:"defense"`
-	Speed   int32 `json:"speed"`
-}
-
 type Query struct {
 }
 

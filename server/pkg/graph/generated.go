@@ -5,7 +5,6 @@ package graph
 import (
 	"bytes"
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/K-Kizuku/pymon-graphql/graph/model"
+	"github.com/K-Kizuku/pymon-graphql/pkg/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -40,6 +39,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Python() PythonResolver
+	PythonStats() PythonStatsResolver
 	Query() QueryResolver
 }
 
@@ -52,7 +52,6 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Repository func(childComplexity int) int
-		Skills     func(childComplexity int) int
 		Stats      func(childComplexity int) int
 		User       func(childComplexity int) int
 	}
@@ -72,6 +71,7 @@ type ComplexityRoot struct {
 		Attack  func(childComplexity int) int
 		Defense func(childComplexity int) int
 		Hp      func(childComplexity int) int
+		Skills  func(childComplexity int) int
 		Speed   func(childComplexity int) int
 	}
 
@@ -89,7 +89,9 @@ type ComplexityRoot struct {
 type PythonResolver interface {
 	User(ctx context.Context, obj *model.Python) (*model.User, error)
 	Stats(ctx context.Context, obj *model.Python) (*model.PythonStats, error)
-	Skills(ctx context.Context, obj *model.Python) ([]*model.PythonSkill, error)
+}
+type PythonStatsResolver interface {
+	Skills(ctx context.Context, obj *model.PythonStats) ([]*model.PythonSkill, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
@@ -142,13 +144,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Python.Repository(childComplexity), true
-
-	case "Python.skills":
-		if e.complexity.Python.Skills == nil {
-			break
-		}
-
-		return e.complexity.Python.Skills(childComplexity), true
 
 	case "Python.stats":
 		if e.complexity.Python.Stats == nil {
@@ -240,6 +235,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PythonStats.Hp(childComplexity), true
+
+	case "PythonStats.skills":
+		if e.complexity.PythonStats.Skills == nil {
+			break
+		}
+
+		return e.complexity.PythonStats.Skills(childComplexity), true
 
 	case "PythonStats.speed":
 		if e.complexity.PythonStats.Speed == nil {
@@ -364,19 +366,45 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema.graphqls"
-var sourcesFS embed.FS
-
-func sourceData(filename string) string {
-	data, err := sourcesFS.ReadFile(filename)
-	if err != nil {
-		panic(fmt.Sprintf("codegen problem: %s not available", filename))
-	}
-	return string(data)
+var sources = []*ast.Source{
+	{Name: "../../schema.graphqls", Input: `type User {
+  id: ID!
+  name: String!
 }
 
-var sources = []*ast.Source{
-	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
+type Python {
+  id: ID!
+  name: String!
+  exp: Int!
+  repository: String!
+  user: User!
+  stats: PythonStats!
+}
+
+type PythonStats {
+  hp: Int!
+  attack: Int!
+  defense: Int!
+  speed: Int!
+  skills: [PythonSkill!]!
+}
+
+type PythonSkill {
+  id: ID!
+  name: String!
+  description: String!
+  pp: Int!
+  attack: Int!
+  hitRate: Int!
+  minVersion: String!
+  maxVersion: String!
+}
+
+type Query {
+  me: User!
+  python: Python!
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -665,7 +693,7 @@ func (ec *executionContext) _Python_user(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Python_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -715,7 +743,7 @@ func (ec *executionContext) _Python_stats(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.PythonStats)
 	fc.Result = res
-	return ec.marshalNPythonStats2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonStats(ctx, field.Selections, res)
+	return ec.marshalNPythonStats2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonStats(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Python_stats(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -734,70 +762,10 @@ func (ec *executionContext) fieldContext_Python_stats(_ context.Context, field g
 				return ec.fieldContext_PythonStats_defense(ctx, field)
 			case "speed":
 				return ec.fieldContext_PythonStats_speed(ctx, field)
+			case "skills":
+				return ec.fieldContext_PythonStats_skills(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PythonStats", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Python_skills(ctx context.Context, field graphql.CollectedField, obj *model.Python) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Python_skills(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Python().Skills(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.PythonSkill)
-	fc.Result = res
-	return ec.marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonSkillᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Python_skills(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Python",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_PythonSkill_id(ctx, field)
-			case "name":
-				return ec.fieldContext_PythonSkill_name(ctx, field)
-			case "description":
-				return ec.fieldContext_PythonSkill_description(ctx, field)
-			case "pp":
-				return ec.fieldContext_PythonSkill_pp(ctx, field)
-			case "attack":
-				return ec.fieldContext_PythonSkill_attack(ctx, field)
-			case "hitRate":
-				return ec.fieldContext_PythonSkill_hitRate(ctx, field)
-			case "minVersion":
-				return ec.fieldContext_PythonSkill_minVersion(ctx, field)
-			case "maxVersion":
-				return ec.fieldContext_PythonSkill_maxVersion(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type PythonSkill", field.Name)
 		},
 	}
 	return fc, nil
@@ -1331,6 +1299,68 @@ func (ec *executionContext) fieldContext_PythonStats_speed(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _PythonStats_skills(ctx context.Context, field graphql.CollectedField, obj *model.PythonStats) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PythonStats_skills(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PythonStats().Skills(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.PythonSkill)
+	fc.Result = res
+	return ec.marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonSkillᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PythonStats_skills(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PythonStats",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_PythonSkill_id(ctx, field)
+			case "name":
+				return ec.fieldContext_PythonSkill_name(ctx, field)
+			case "description":
+				return ec.fieldContext_PythonSkill_description(ctx, field)
+			case "pp":
+				return ec.fieldContext_PythonSkill_pp(ctx, field)
+			case "attack":
+				return ec.fieldContext_PythonSkill_attack(ctx, field)
+			case "hitRate":
+				return ec.fieldContext_PythonSkill_hitRate(ctx, field)
+			case "minVersion":
+				return ec.fieldContext_PythonSkill_minVersion(ctx, field)
+			case "maxVersion":
+				return ec.fieldContext_PythonSkill_maxVersion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PythonSkill", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_me(ctx, field)
 	if err != nil {
@@ -1359,7 +1389,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1409,7 +1439,7 @@ func (ec *executionContext) _Query_python(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.Python)
 	fc.Result = res
-	return ec.marshalNPython2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPython(ctx, field.Selections, res)
+	return ec.marshalNPython2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPython(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_python(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1432,8 +1462,6 @@ func (ec *executionContext) fieldContext_Query_python(_ context.Context, field g
 				return ec.fieldContext_Python_user(ctx, field)
 			case "stats":
 				return ec.fieldContext_Python_stats(ctx, field)
-			case "skills":
-				return ec.fieldContext_Python_skills(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Python", field.Name)
 		},
@@ -3542,42 +3570,6 @@ func (ec *executionContext) _Python(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "skills":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Python_skills(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3689,23 +3681,59 @@ func (ec *executionContext) _PythonStats(ctx context.Context, sel ast.SelectionS
 		case "hp":
 			out.Values[i] = ec._PythonStats_hp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "attack":
 			out.Values[i] = ec._PythonStats_attack(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "defense":
 			out.Values[i] = ec._PythonStats_defense(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "speed":
 			out.Values[i] = ec._PythonStats_speed(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "skills":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PythonStats_skills(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4238,11 +4266,11 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNPython2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPython(ctx context.Context, sel ast.SelectionSet, v model.Python) graphql.Marshaler {
+func (ec *executionContext) marshalNPython2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPython(ctx context.Context, sel ast.SelectionSet, v model.Python) graphql.Marshaler {
 	return ec._Python(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPython2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPython(ctx context.Context, sel ast.SelectionSet, v *model.Python) graphql.Marshaler {
+func (ec *executionContext) marshalNPython2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPython(ctx context.Context, sel ast.SelectionSet, v *model.Python) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4252,7 +4280,7 @@ func (ec *executionContext) marshalNPython2ᚖgithubᚗcomᚋKᚑKizukuᚋpymon�
 	return ec._Python(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonSkillᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PythonSkill) graphql.Marshaler {
+func (ec *executionContext) marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonSkillᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PythonSkill) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4276,7 +4304,7 @@ func (ec *executionContext) marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizuku�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPythonSkill2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonSkill(ctx, sel, v[i])
+			ret[i] = ec.marshalNPythonSkill2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonSkill(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4296,7 +4324,7 @@ func (ec *executionContext) marshalNPythonSkill2ᚕᚖgithubᚗcomᚋKᚑKizuku�
 	return ret
 }
 
-func (ec *executionContext) marshalNPythonSkill2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonSkill(ctx context.Context, sel ast.SelectionSet, v *model.PythonSkill) graphql.Marshaler {
+func (ec *executionContext) marshalNPythonSkill2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonSkill(ctx context.Context, sel ast.SelectionSet, v *model.PythonSkill) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4306,11 +4334,11 @@ func (ec *executionContext) marshalNPythonSkill2ᚖgithubᚗcomᚋKᚑKizukuᚋp
 	return ec._PythonSkill(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPythonStats2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonStats(ctx context.Context, sel ast.SelectionSet, v model.PythonStats) graphql.Marshaler {
+func (ec *executionContext) marshalNPythonStats2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonStats(ctx context.Context, sel ast.SelectionSet, v model.PythonStats) graphql.Marshaler {
 	return ec._PythonStats(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPythonStats2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐPythonStats(ctx context.Context, sel ast.SelectionSet, v *model.PythonStats) graphql.Marshaler {
+func (ec *executionContext) marshalNPythonStats2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐPythonStats(ctx context.Context, sel ast.SelectionSet, v *model.PythonStats) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4335,11 +4363,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋKᚑKizukuᚋpymonᚑgraphqlᚋpkgᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
