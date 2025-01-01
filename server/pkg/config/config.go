@@ -41,3 +41,15 @@ func NewAppConfig() *AppConfig {
 		GithubToken:    cmp.Or(os.Getenv("GITHUB_TOKEN"), ""),
 	}
 }
+
+type RedisConfig struct {
+	Host string
+	Port string
+}
+
+func NewRedisConfig() *RedisConfig {
+	return &RedisConfig{
+		Host: cmp.Or(os.Getenv("REDIS_HOST"), "redis"),
+		Port: cmp.Or(os.Getenv("REDIS_PORT"), "6379"),
+	}
+}
