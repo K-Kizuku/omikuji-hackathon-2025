@@ -32,10 +32,12 @@ func NewDBConfig() *DBConfig {
 
 type AppConfig struct {
 	FirebaseSecret string
+	GithubToken    string
 }
 
 func NewAppConfig() *AppConfig {
 	return &AppConfig{
 		FirebaseSecret: cmp.Or(os.Getenv("FIREBASE_SECRET"), ""),
+		GithubToken:    cmp.Or(os.Getenv("GITHUB_TOKEN"), ""),
 	}
 }
