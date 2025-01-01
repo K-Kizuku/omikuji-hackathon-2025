@@ -38,3 +38,13 @@ func (p *PythonSkill) ToEntity() *entity.PythonSkill {
 		MaxVersion:  p.MaxVersion,
 	}
 }
+
+type PythonSkills []*PythonSkill
+
+func (p PythonSkills) ToEntities() entity.PythonSkills {
+	pythonSkills := make(entity.PythonSkills, 0, len(p))
+	for _, pythonSkill := range p {
+		pythonSkills = append(pythonSkills, pythonSkill.ToEntity())
+	}
+	return pythonSkills
+}
