@@ -21,7 +21,7 @@ func NewPythonStatRepository(db *db.DB) *PythonStatRepository {
 
 func (p *PythonStatRepository) GetPythonStatByID(ctx context.Context, pythonID string) (*entity.PythonStat, error) {
 	pythonStat := &model.PythonStat{}
-	err := p.db.DB.GetContext(ctx, pythonStat, "SELECT * FROM python_stat WHERE python_id = ?", pythonID)
+	err := p.db.DB.GetContext(ctx, pythonStat, "SELECT * FROM pythons_stats WHERE python_id = ?", pythonID)
 	if err != nil {
 		return nil, err
 	}

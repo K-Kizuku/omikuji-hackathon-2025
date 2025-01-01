@@ -31,7 +31,16 @@ type PythonSkill {
   maxVersion: String!
 }
 
+type Time {
+  unixTime: Int!
+  timeStamp: String!
+}
+
 type Query {
   me: User!
   python: Python!
+}
+
+type Subscription {
+  currentTime: Time!
 }

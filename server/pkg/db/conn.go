@@ -5,6 +5,8 @@ import (
 
 	"github.com/K-Kizuku/pymon-graphql/pkg/config"
 	"github.com/jmoiron/sqlx"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 const driverName = "mysql"

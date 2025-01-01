@@ -21,7 +21,7 @@ func NewPythonSkillRepository(db *db.DB) *PythonSkillRepository {
 
 func (p *PythonSkillRepository) SelectByIDs(ctx context.Context, ids []int) ([]*entity.PythonSkill, error) {
 	pythonSkills := make([]*entity.PythonSkill, 0, len(ids))
-	query := "SELECT * FROM python_skill WHERE id IN (?)"
+	query := "SELECT * FROM pythons_skills WHERE id IN (?)"
 	sql, params, err := sqlx.In(query, ids)
 	if err != nil {
 		return []*entity.PythonSkill{}, err
