@@ -7,5 +7,5 @@ import (
 )
 
 type IPythonSkillRepository interface {
-	SelectByIDs(ctx context.Context, ids []int) ([]*entity.PythonSkill, error)
+	SelectByIDs(ctx context.Context, ids []int) (entity.PythonSkills, error)
 }

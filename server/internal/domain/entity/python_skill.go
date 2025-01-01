@@ -10,3 +10,5 @@ type PythonSkill struct {
 	MinVersion  string
 	MaxVersion  string
 }
+
+type PythonSkills []*PythonSkill
