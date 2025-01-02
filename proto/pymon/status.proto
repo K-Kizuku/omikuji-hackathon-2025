@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pymon.status;
+
+import "pymon/resource.proto";
+
+message SPAssigned {
+  string pymon_id = 1;
+  resource.Status status = 2;
+}

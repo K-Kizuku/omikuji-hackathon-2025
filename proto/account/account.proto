@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package account.account;
+
+message UserCreated {
+  string user_id = 1;
+  string name = 2;
+  string github_id = 3;
+}
+
+message UserNameChanged {
+  string user_id = 1;
+  string name = 2;
+}
+
+message UserDeleted { string user_id = 1; }

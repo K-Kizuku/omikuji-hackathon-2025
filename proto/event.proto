@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package event;
+
+import "google/protobuf/timestamp.proto";
+import "account/resource.proto";
+import "account/account.proto";
+import "account/login.proto";
+import "pymon/exp.proto";
+import "pymon/pymon.proto";
+import "pymon/skill.proto";
+import "pymon/status.proto";
+import "pymon/train.proto";
+
+message EventMetadata {
+  string event_id = 1;
+  string correlation_id = 2;
+  string causation_id = 3;
+  string aggregate_id = 4;
+  account.resource.User who = 5;
+  google.protobuf.Timestamp occurred_at = 6;
+}
+
+message EventEnvelope {
+  EventMetadata metadata = 1;
+  oneof event {
+    account.account.UserCreated user_created = 2;
+    account.account.UserNameChanged user_name_changed = 3;
+    account.account.UserDeleted user_deleted = 4;
+    account.login.LoggedIn user_logged_in = 5;
+    pymon.exp.ExpGottenByLoginBonus exp_gotten_by_login_bonus = 6;
+    pymon.exp.ExpGottenByTraining exp_gotten_by_training = 7;
+    pymon.pymon.PymonCreated pymon_created = 8;
+    pymon.pymon.PymonNameChanged pymon_name_changed = 9;
+    pymon.pymon.PymonExpChanged pymon_exp_changed = 10;
+    pymon.pymon.PymonStatusChanged pymon_status_changed = 11;
+    pymon.pymon.PymonSkillChanged pymon_skill_changed = 12;
+    pymon.pymon.PymonDeleted pymon_deleted = 13;
+    pymon.skill.SkillLearned skill_learned = 14;
+    pymon.skill.SkillForgotten skill_forgotten = 15;
+    pymon.status.SPAssigned sp_assigned = 16;
+    pymon.train.TrainingDid training_did = 17;
+  }
+}
