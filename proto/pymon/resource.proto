@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pymon.resource;
+
+message Status {
+  int64 hp = 1;
+  int32 attack = 2;
+  int32 defense = 3;
+  int32 speed = 4;
+}

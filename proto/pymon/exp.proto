@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pymon.exp;
+
+message ExpGottenByLoginBonus {
+  string pymon_id = 1;
+  int64 exp = 2;
+}
+
+message ExpGottenByTraining {
+  string pymon_id = 1;
+  int64 exp = 2;
+}

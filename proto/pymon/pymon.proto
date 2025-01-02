@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package pymon.pymon;
+
+import "pymon/resource.proto";
+
+message PymonCreated {
+  string pymon_id = 1;
+  string owner_id = 2;
+  string repository_id = 3;
+  string name = 4;
+  int64 exp = 5;
+  resource.Status status = 6;
+  int32 skill1 = 7;
+  int32 skill2 = 8;
+  int32 skill3 = 9;
+  int32 skill4 = 10;
+}
+
+message PymonNameChanged {
+  string pymon_id = 1;
+  string name = 2;
+}
+
+message PymonExpChanged {
+  string pymon_id = 1;
+  int64 exp = 2;
+}
+
+// Duplicate message definition.
+message PymonStatusChanged {
+  string pymon_id = 1;
+  resource.Status status = 2;
+}
+
+// Duplicate message definition.
+message PymonSkillChanged {
+  string pymon_id = 1;
+  int32 skill1 = 2;
+  int32 skill2 = 3;
+  int32 skill3 = 4;
+  int32 skill4 = 5;
+}
+
+message PymonDeleted { string id = 1; }
