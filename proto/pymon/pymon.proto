@@ -11,10 +11,10 @@ message PymonCreated {
   string name = 4;
   int64 exp = 5;
   resource.Status status = 6;
-  int32 skill1 = 7;
-  int32 skill2 = 8;
-  int32 skill3 = 9;
-  int32 skill4 = 10;
+  optional int32 skill1 = 7;
+  optional int32 skill2 = 8;
+  optional int32 skill3 = 9;
+  optional int32 skill4 = 10;
 }
 
 message PymonNameChanged {

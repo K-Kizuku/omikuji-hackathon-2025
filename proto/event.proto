@@ -13,12 +13,11 @@ import "pymon/status.proto";
 import "pymon/train.proto";
 
 message EventMetadata {
-  string event_id = 1;
-  string correlation_id = 2;
-  string causation_id = 3;
-  string aggregate_id = 4;
-  account.resource.User who = 5;
-  google.protobuf.Timestamp occurred_at = 6;
+  string id = 1;
+  uint64 seqNr = 2;
+  string aggregate_id = 3;
+  string executor_id = 4;
+  uint64 occurred_at = 5;
 }
 
 message EventEnvelope {

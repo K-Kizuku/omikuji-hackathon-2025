@@ -1,4 +1,4 @@
-ENV_FILE := .env
+ENV_FILE := .env.local
 include $(ENV_FILE)
 
 export $(shell sed 's/=.*//' $(ENV_FILE))
@@ -21,3 +21,6 @@ local-migrate:
 
 migrate-down:
 	migrate -path db/mysql/migrations -database "mysql://$(MYSQL_USERNAME):$(MYSQL_PASSWORD)@tcp($(MYSQL_HOST):$(MYSQL_PORT))/$(MYSQL_DATABASE)?tls=true&multiStatements=true" down
+
+gen-proto:
+	make -C proto gen-proto
