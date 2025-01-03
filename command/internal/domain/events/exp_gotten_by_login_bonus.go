@@ -102,7 +102,7 @@ func (e *ExpGottenByLoginBonus) GetOccurredAt() uint64 {
 	return e.occurredAt
 }
 
-func (g *ExpGottenByLoginBonus) String() string {
+func (e *ExpGottenByLoginBonus) String() string {
 	return fmt.Sprintf("%s{ id: %s, aggregateId: %s, seqNr: %d, occurredAt: %d}",
-		g.GetTypeName(), g.id, g.aggregateID, g.seqNr, g.occurredAt)
+		e.GetTypeName(), e.id, e.aggregateID, e.seqNr, e.occurredAt)
 }
