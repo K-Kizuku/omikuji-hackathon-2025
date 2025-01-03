@@ -1,51 +1,48 @@
 "use client";
 
 import { useState } from "react";
-// import axios from "axios";
 
 export default function TrainingPage() {
-	const [points, setPoints] = useState(10); // 割り振り可能なポイント
+	const [points, setPoints] = useState(10);
 	const [stats, setStats] = useState({
 		hp: 0,
 		attack: 0,
 		defense: 0,
 		speed: 0,
 	});
-	const [totalExperience, setTotalExperience] = useState(0); // 総経験値
-	const [pythonName, setPythonName] = useState(""); // モンスター名
+	const [totalExperience, setTotalExperience] = useState(0);
+	const [pythonName, setPythonName] = useState("Pythonモンスター");
+	const [trainingLog, setTrainingLog] = useState<string[]>([]);
+	const [bonusClaimed, setBonusClaimed] = useState(false); // ボーナス獲得済みフラグ
 
-	// データ取得用のモック関数
-	// const fetchPythonData = async () => {
-	// 	// モンスターIDを仮定（通常はログイン中のユーザーやURLパラメータから取得）
-	// 	const pythonId = 1;
-
-	// 	try {
-	// 		const response = await axios.get(`/api/pythons/${pythonId}`);
-	// 		const { name, exp, stats: fetchedStats } = response.data;
-
-	// 		setPythonName(name);
-	// 		setTotalExperience(exp);
-	// 		setStats(fetchedStats);
-	// 	} catch (error) {
-	// 		console.error("データの取得に失敗しました", error);
-	// 	}
-	// };
-
-	// useEffect(() => {
-	// 	fetchPythonData();
-	// }, []);
-
+	// ステータス増加処理
 	const handleIncrease = (stat: keyof typeof stats) => {
 		if (points > 0) {
 			setStats((prev) => ({ ...prev, [stat]: prev[stat] + 1 }));
 			setPoints((prev) => prev - 1);
+			setTrainingLog((prev) => [...prev, `${stat.toUpperCase()} +1`]);
 		}
 	};
 
+	// ステータス減少処理
 	const handleDecrease = (stat: keyof typeof stats) => {
 		if (stats[stat] > 0) {
 			setStats((prev) => ({ ...prev, [stat]: prev[stat] - 1 }));
 			setPoints((prev) => prev + 1);
+			setTrainingLog((prev) => [...prev, `${stat.toUpperCase()} -1`]);
+		}
+	};
+
+	// ログインボーナス処理
+	const claimBonus = () => {
+		if (!bonusClaimed) {
+			const bonusPoints = 5; // ボーナスポイント数
+			setPoints((prev) => prev + bonusPoints);
+			setTrainingLog((prev) => [
+				...prev,
+				`ログインボーナスで+${bonusPoints}ポイント獲得！`,
+			]);
+			setBonusClaimed(true);
 		}
 	};
 
@@ -57,6 +54,20 @@ export default function TrainingPage() {
 			<div className="flex flex-col items-center">
 				<p className="text-xl">モンスター名: {pythonName}</p>
 				<p>総経験値: {totalExperience}</p>
+			</div>
+
+			{/* ログインボーナス */}
+			<div className="mt-4">
+				<button
+					type="button"
+					className={`px-4 py-2 rounded ${
+						bonusClaimed ? "bg-gray-500 cursor-not-allowed" : "bg-yellow-500"
+					}`}
+					onClick={claimBonus}
+					disabled={bonusClaimed}
+				>
+					{bonusClaimed ? "ボーナス獲得済み" : "ログインボーナスを受け取る"}
+				</button>
 			</div>
 
 			{/* ステータス */}
@@ -72,10 +83,11 @@ export default function TrainingPage() {
 									: key === "defense"
 										? "防御力"
 										: "スピード";
+
 						return (
 							<div key={key} className="flex flex-col items-center">
 								<p className="capitalize mb-2">{translatedKey}</p>
-								<p>{value}</p>
+								<p className="text-2xl font-bold">{value}</p>
 								<div className="flex space-x-2 mt-2">
 									<button
 										type="button"
@@ -97,6 +109,16 @@ export default function TrainingPage() {
 							</div>
 						);
 					})}
+				</div>
+			</div>
+
+			{/* トレーニングログ */}
+			<div className="w-full max-w-4xl bg-gray-700 p-4 rounded mt-8">
+				<p className="font-bold">トレーニングログ</p>
+				<div className="h-32 overflow-y-auto">
+					{trainingLog.map((log, index) => (
+						<p key={`${log + index}`}>{log}</p>
+					))}
 				</div>
 			</div>
 		</main>
