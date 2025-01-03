@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/K-Kizuku/pymon-command-api/internal/rmu"
 	"github.com/K-Kizuku/pymon-command-api/pkg/db"
 	"github.com/alecthomas/kong"
 	"github.com/fujiwara/lamblocal"
@@ -21,10 +22,6 @@ type CLI struct {
 	}
 }
 
-func hello(_ context.Context, name string) (string, error) {
-	return fmt.Sprintf("Hello %s", name), nil
-}
-
 func main() {
 	ctx := context.Background()
 	var c CLI
@@ -39,5 +36,7 @@ func main() {
 			}
 		}
 	}(db.DB)
-	lamblocal.Run(ctx, hello)
+	daoImpl := rmu.NewPymonDaoImpl(db.DB)
+	rmu := rmu.NewReadModelUpdater(daoImpl)
+	lamblocal.Run(ctx, rmu.UpdateReadModel)
 }
