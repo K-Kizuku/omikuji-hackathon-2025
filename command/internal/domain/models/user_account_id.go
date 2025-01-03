@@ -7,60 +7,60 @@ import (
 	"github.com/google/uuid"
 )
 
-const UserAccountIdPrefix = "UserAccount"
+const UserAccountIDPrefix = "UserAccount"
 
-// UserAccountId is a value object that represents a user account id.
-type UserAccountId struct {
+// UserAccountID is a value object that represents a user account id.
+type UserAccountID struct {
 	value string
 }
 
-// NewUserAccountId is the constructor for UserAccountId with generating id.
-func NewUserAccountId() UserAccountId {
+// NewUserAccountID is the constructor for UserAccountID with generating id.
+func NewUserAccountID() UserAccountID {
 	id := uuid.Must(uuid.NewV7())
-	return UserAccountId{value: id.String()}
+	return UserAccountID{value: id.String()}
 }
 
-// NewUserAccountIdFromString is the constructor for UserAccountId.
-func NewUserAccountIdFromString(value string) (*UserAccountId, error) {
+// NewUserAccountIDFromString is the constructor for UserAccountID.
+func NewUserAccountIDFromString(value string) (*UserAccountID, error) {
 	if value == "" {
-		return nil, errors.New("UserAccountId is empty")
+		return nil, errors.New("UserAccountID is empty")
 	}
-	if len(value) > len(UserAccountIdPrefix) && value[0:len(UserAccountIdPrefix)] == UserAccountIdPrefix {
-		value = value[len(UserAccountIdPrefix)+1:]
+	if len(value) > len(UserAccountIDPrefix) && value[0:len(UserAccountIDPrefix)] == UserAccountIDPrefix {
+		value = value[len(UserAccountIDPrefix)+1:]
 	}
-	return &UserAccountId{value: value}, nil
+	return &UserAccountID{value: value}, nil
 }
 
-// ConvertUserAccountIdFromJSON is a constructor for UserAccountId.
-func ConvertUserAccountIdFromJSON(value map[string]interface{}) (*UserAccountId, error) {
-	return NewUserAccountIdFromString(value["value"].(string))
+// ConvertUserAccountIDFromJSON is a constructor for UserAccountID.
+func ConvertUserAccountIDFromJSON(value map[string]interface{}) (*UserAccountID, error) {
+	return NewUserAccountIDFromString(value["value"].(string))
 }
 
 // ToJSON converts to JSON.
 //
 // However, this method is out of layer.
-func (u *UserAccountId) ToJSON() map[string]interface{} {
+func (u *UserAccountID) ToJSON() map[string]interface{} {
 	return map[string]interface{}{
 		"value": u.value,
 	}
 }
 
-func (u *UserAccountId) GetValue() string {
+func (u *UserAccountID) GetValue() string {
 	return u.value
 }
 
-func (u *UserAccountId) GetTypeName() string {
+func (u *UserAccountID) GetTypeName() string {
 	return "UserAccount"
 }
 
-func (u *UserAccountId) AsString() string {
+func (u *UserAccountID) AsString() string {
 	return fmt.Sprintf("%s-%s", u.GetTypeName(), u.GetValue())
 }
 
-func (u *UserAccountId) String() string {
+func (u *UserAccountID) String() string {
 	return u.AsString()
 }
 
-func (u *UserAccountId) Equals(other *UserAccountId) bool {
+func (u *UserAccountID) Equals(other *UserAccountID) bool {
 	return u.value == other.value
 }

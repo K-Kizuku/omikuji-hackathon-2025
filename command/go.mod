@@ -3,10 +3,13 @@ module github.com/K-Kizuku/pymon-command-api
 go 1.23.4
 
 require (
+	github.com/alecthomas/kong v1.6.0
 	github.com/aws/aws-lambda-go v1.47.0
+	github.com/fujiwara/lamblocal v0.0.4
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/uuid v1.6.0
 	github.com/j5ik2o/event-store-adapter-go v1.0.76
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/samber/mo v1.13.0
 	google.golang.org/protobuf v1.36.1
 )

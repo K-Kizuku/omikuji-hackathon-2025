@@ -19,7 +19,7 @@ type ExpGottenByTraining struct {
 	exp         int64
 }
 
-func NewExpGottenByTraining(aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountId) ExpGottenByTraining {
+func NewExpGottenByTraining(aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountID) ExpGottenByTraining {
 	id := uuid.Must(uuid.NewV7())
 	now := time.Now()
 	occurredAt := uint64(now.UnixNano() / 1e6)
@@ -36,7 +36,7 @@ func NewExpGottenByTraining(aggregateID models.PymonID, pymonID string, exp int6
 	}
 }
 
-func NewExpGottenByTrainingFrom(id string, aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountId, occurredAt uint64) ExpGottenByTraining {
+func NewExpGottenByTrainingFrom(id string, aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountID, occurredAt uint64) ExpGottenByTraining {
 	return ExpGottenByTraining{
 		EventMetadata: EventMetadata{
 			id:         id,
@@ -90,7 +90,7 @@ func (e *ExpGottenByTraining) GetSeqNr() uint64 {
 	return e.seqNr
 }
 
-func (e *ExpGottenByTraining) GetExecutorId() *models.UserAccountId {
+func (e *ExpGottenByTraining) GetExecutorId() *models.UserAccountID {
 	return &e.executorId
 }
 

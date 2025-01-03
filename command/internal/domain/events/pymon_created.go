@@ -17,7 +17,7 @@ type PymonCreated struct {
 	EventMetadata
 	aggregateID  models.PymonID
 	pymonID      string
-	ownerID      models.UserAccountId
+	ownerID      models.UserAccountID
 	RepositoryID string
 	name         string
 	exp          int64
@@ -28,7 +28,7 @@ type PymonCreated struct {
 	skill4       null.Null[int32]
 }
 
-func NewPymonCreated(aggregateID models.PymonID, pymonID string, ownerID models.UserAccountId, RepositoryID string, name string, Status models.Status, seqNr uint64, executorId models.UserAccountId) PymonCreated {
+func NewPymonCreated(aggregateID models.PymonID, pymonID string, ownerID models.UserAccountID, RepositoryID string, name string, Status models.Status, seqNr uint64, executorId models.UserAccountID) PymonCreated {
 	id := uuid.Must(uuid.NewV7())
 	now := time.Now()
 	occurredAt := uint64(now.UnixNano() / 1e6)
@@ -53,7 +53,7 @@ func NewPymonCreated(aggregateID models.PymonID, pymonID string, ownerID models.
 	}
 }
 
-func NewPymonCreatedFrom(id string, aggregateID models.PymonID, pymonID string, ownerID models.UserAccountId, RepositoryID string, name string, exp int64, Status models.Status, skill1 null.Null[int32], skill2 null.Null[int32], skill3 null.Null[int32], skill4 null.Null[int32], seqNr uint64, executorId models.UserAccountId, occurredAt uint64) PymonCreated {
+func NewPymonCreatedFrom(id string, aggregateID models.PymonID, pymonID string, ownerID models.UserAccountID, RepositoryID string, name string, exp int64, Status models.Status, skill1 null.Null[int32], skill2 null.Null[int32], skill3 null.Null[int32], skill4 null.Null[int32], seqNr uint64, executorId models.UserAccountID, occurredAt uint64) PymonCreated {
 	return PymonCreated{
 		EventMetadata: EventMetadata{
 			id:         id,
@@ -127,7 +127,7 @@ func (e *PymonCreated) GetSeqNr() uint64 {
 	return e.seqNr
 }
 
-func (e *PymonCreated) GetExecutorId() *models.UserAccountId {
+func (e *PymonCreated) GetExecutorId() *models.UserAccountID {
 	return &e.executorId
 }
 

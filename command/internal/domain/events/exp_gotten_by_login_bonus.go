@@ -19,7 +19,7 @@ type ExpGottenByLoginBonus struct {
 	exp         int64
 }
 
-func NewExpGottenByLoginBonus(aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountId) ExpGottenByLoginBonus {
+func NewExpGottenByLoginBonus(aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountID) ExpGottenByLoginBonus {
 	id := uuid.Must(uuid.NewV7())
 	now := time.Now()
 	occurredAt := uint64(now.UnixNano() / 1e6)
@@ -36,7 +36,7 @@ func NewExpGottenByLoginBonus(aggregateID models.PymonID, pymonID string, exp in
 	}
 }
 
-func NewExpGottenByLoginBonusFrom(id string, aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountId, occurredAt uint64) ExpGottenByLoginBonus {
+func NewExpGottenByLoginBonusFrom(id string, aggregateID models.PymonID, pymonID string, exp int64, seqNr uint64, executorId models.UserAccountID, occurredAt uint64) ExpGottenByLoginBonus {
 	return ExpGottenByLoginBonus{
 		EventMetadata: EventMetadata{
 			id:         id,
@@ -86,11 +86,19 @@ func (e *ExpGottenByLoginBonus) GetAggregateId() esa.AggregateId {
 	return &e.aggregateID
 }
 
+func (e *ExpGottenByLoginBonus) GetPymonID() string {
+	return e.pymonID
+}
+
+func (e *ExpGottenByLoginBonus) GetExp() int64 {
+	return e.exp
+}
+
 func (e *ExpGottenByLoginBonus) GetSeqNr() uint64 {
 	return e.seqNr
 }
 
-func (e *ExpGottenByLoginBonus) GetExecutorId() *models.UserAccountId {
+func (e *ExpGottenByLoginBonus) GetExecutorId() *models.UserAccountID {
 	return &e.executorId
 }
 

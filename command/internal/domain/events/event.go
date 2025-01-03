@@ -8,12 +8,12 @@ import (
 type EventMetadata struct {
 	id         string
 	seqNr      uint64
-	executorId models.UserAccountId
+	executorId models.UserAccountID
 	occurredAt uint64
 }
 
 type GroupChatEvent interface {
 	esa.Event
-	GetExecutorId() *models.UserAccountId
+	GetExecutorId() *models.UserAccountID
 	ToProto() []byte
 }
