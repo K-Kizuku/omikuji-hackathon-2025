@@ -19,7 +19,8 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 FROM debian:bookworm-slim AS final
 
 ARG UID=10001
-RUN adduser \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && \
+    adduser \
     --disabled-password \
     --gecos "" \
     --home "/nonexistent" \
@@ -31,6 +32,6 @@ USER appuser
 
 COPY --from=build /bin/server /bin/
 
-EXPOSE 8000
+EXPOSE 8080
 
 ENTRYPOINT [ "/bin/server" ]
