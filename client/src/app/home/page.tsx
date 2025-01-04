@@ -1,115 +1,162 @@
 "use client";
 
-import { auth } from "~/firebase/initializeApp";
-import { useAuth } from "~/hooks/useAuth";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+// 型定義
+type PymonStats = {
+	hp: number;
+	attack: number;
+	defense: number;
+	speed: number;
+};
+
+type Pymon = {
+	id: string;
+	name: string;
+	exp: number;
+	stats: PymonStats;
+};
 
 export default function HomePage() {
-	const { user } = useAuth();
-	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string | null>(null);
-	// const { user } = useAuth();
-	const [data, setData] = useState(null);
+	const [selectedPymon, setSelectedPymon] = useState<Pymon | null>(null); // 選択されたパイモン
 
-	console.log("user", user);
+	// ダミーデータ
+	const pymons: Pymon[] = [
+		{
+			id: "1",
+			name: "Pyro",
+			exp: 1200,
+			stats: {
+				hp: 100,
+				attack: 50,
+				defense: 30,
+				speed: 20,
+			},
+		},
+		{
+			id: "2",
+			name: "Hydra",
+			exp: 800,
+			stats: {
+				hp: 120,
+				attack: 40,
+				defense: 40,
+				speed: 15,
+			},
+		},
+		{
+			id: "3",
+			name: "Electro",
+			exp: 1500,
+			stats: {
+				hp: 80,
+				attack: 60,
+				defense: 20,
+				speed: 25,
+			},
+		},
+	];
 
-	useEffect(() => {
-		if (!user) return;
+	// 詳細パネルを開く
+	const openDetails = (pymon: Pymon) => {
+		setSelectedPymon(pymon);
+	};
 
-		const fetchPythonData = async () => {
-			setLoading(true);
-			setError(null);
+	// 詳細パネルを閉じる
+	const closeDetails = () => {
+		setSelectedPymon(null);
+	};
 
-			const query = `
-				query {
-					me {
-						id
-						name
-					}
-				}
-			`;
-
-			try {
-				const response = await fetch("http://localhost:8080/query", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${await user?.getIdToken()}`, // トークンを使用
-					},
-					body: JSON.stringify({ query }),
-				});
-
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-
-				const result = await response.json();
-
-				if (result.errors) {
-					throw new Error(result.errors[0].message);
-				}
-
-				setData(result.data);
-			} catch (err) {
-				console.error(err);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchPythonData();
-	}, [user]);
-
-	const handleLogout = async () => {
-		try {
-			await auth.signOut();
-			console.log("Logged out successfully!");
-		} catch (error) {
-			console.error("Error during logout:", error);
-		}
+	// ログアウトボタンの動作（仮）
+	const handleLogout = () => {
+		alert("ログアウトしました！");
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-400 to-yellow-400 text-white p-8">
+		<div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-400 to-yellow-400 text-white p-8 relative">
 			<header className="flex justify-between items-center bg-gray-900 bg-opacity-80 p-4 rounded-lg">
 				<h1 className="text-3xl font-mono font-bold tracking-wide">
 					Python World
 				</h1>
-				<p>{user?.email}</p>
-				<button
-					onClick={handleLogout}
-					type="button"
-					className="bg-green-300 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-yellow-300 transition-transform transform hover:scale-105"
-				>
-					Logout
-				</button>
-			</header>
-			<main className="mt-8">
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-					<Link
-						href="/"
+				<div className="flex space-x-4">
+					<button
 						type="button"
-						className="block text-center bg-green-300 hover:bg-blue-700 text-white py-6 px-8 rounded-xl shadow-lg text-lg font-bold tracking-wider uppercase transition-transform transform hover:scale-105"
+						onClick={handleLogout}
+						className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-transform transform hover:scale-105"
 					>
-						Write Code
-					</Link>
+						ログアウト
+					</button>
 					<Link
-						href="/"
-						type="button"
-						className="block text-center bg-green-300 hover:bg-gray-700 text-yellow-400 py-6 px-8 rounded-xl shadow-lg text-lg font-bold tracking-wider uppercase transition-transform transform hover:scale-105"
-					>
-						Run Script
-					</Link>
-					<Link
-						href={`/${user?.uid}/create`}
-						type="button"
-						className="block text-center bg-green-300 hover:bg-yellow-500 text-gray-900 py-6 px-8 rounded-xl shadow-lg text-lg font-bold tracking-wider uppercase transition-transform transform hover:scale-105"
+						href="/create"
+						className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105"
 					>
 						ペイモン作成
 					</Link>
 				</div>
+			</header>
+			<main className="mt-8">
+				<h2 className="text-2xl font-bold mb-4">Your Pymons</h2>
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+					{pymons.map((pymon) => (
+						<div
+							key={pymon.id}
+							className="bg-gray-800 rounded-lg p-4 shadow-lg text-center"
+						>
+							<h3 className="text-lg font-bold">{pymon.name}</h3>
+							<p>Exp: {pymon.exp}</p>
+							<p>HP: {pymon.stats.hp}</p>
+							<p>Attack: {pymon.stats.attack}</p>
+							<div className="mt-4 flex justify-center space-x-4">
+								<Link
+									href={`/${pymon.id}/育成`}
+									className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
+								>
+									育成
+								</Link>
+								<Link
+									href={`/${pymon.id}/戦闘`}
+									className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700"
+								>
+									戦闘
+								</Link>
+							</div>
+							<button
+								type="button"
+								onClick={() => openDetails(pymon)}
+								className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+							>
+								詳細を見る
+							</button>
+						</div>
+					))}
+				</div>
 			</main>
+
+			{/* サイドパネル */}
+			<div
+				className={`fixed top-0 right-0 h-full w-1/3 bg-gray-900 bg-opacity-90 p-6 shadow-lg z-50 transform transition-transform ${
+					selectedPymon ? "translate-x-0" : "translate-x-full"
+				}`}
+			>
+				{selectedPymon && (
+					<>
+						<button
+							type="button"
+							onClick={closeDetails}
+							className="absolute top-4 right-4 text-white text-2xl font-bold"
+						>
+							&times;
+						</button>
+						<h3 className="text-2xl font-bold mb-4">{selectedPymon.name}</h3>
+						<p>Exp: {selectedPymon.exp}</p>
+						<p>HP: {selectedPymon.stats.hp}</p>
+						<p>Attack: {selectedPymon.stats.attack}</p>
+						<p>Defense: {selectedPymon.stats.defense}</p>
+						<p>Speed: {selectedPymon.stats.speed}</p>
+					</>
+				)}
+			</div>
 		</div>
 	);
 }
