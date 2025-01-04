@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
+import { Loading } from "~/components/Loading";
 import { useAuth } from "~/hooks/useAuth";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
@@ -15,7 +16,7 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 	}, [user, loading, router]);
 
 	if (loading) {
-		return <p>Loading...</p>;
+		return <Loading />;
 	}
 
 	return <>{children}</>;
