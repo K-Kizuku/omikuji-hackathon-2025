@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { auth } from "~/firebase/initializeApp";
 
 // 型定義
 type PymonStats = {
@@ -20,6 +22,7 @@ type Pymon = {
 
 export default function HomePage() {
 	const [selectedPymon, setSelectedPymon] = useState<Pymon | null>(null); // 選択されたパイモン
+	const router = useRouter();
 
 	// ダミーデータ
 	const pymons: Pymon[] = [
@@ -69,8 +72,9 @@ export default function HomePage() {
 	};
 
 	// ログアウトボタンの動作（仮）
-	const handleLogout = () => {
-		alert("ログアウトしました！");
+	const handleLogout = async () => {
+		await auth.signOut();
+		router.push("/auth/login");
 	};
 
 	return (
@@ -133,7 +137,7 @@ export default function HomePage() {
 				</div>
 			</main>
 
-			{/* サイドパネル */}
+			{/* サイドメニュー */}
 			<div
 				className={`fixed top-0 right-0 h-full w-1/3 bg-gray-900 bg-opacity-90 p-6 shadow-lg z-50 transform transition-transform ${
 					selectedPymon ? "translate-x-0" : "translate-x-full"
