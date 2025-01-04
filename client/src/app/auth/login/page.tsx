@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
 	browserLocalPersistence,
+	GithubAuthProvider,
 	onAuthStateChanged,
 	setPersistence,
 	signInWithPopup,
@@ -34,7 +35,17 @@ export default function LoginPage() {
 			await setPersistence(auth, browserLocalPersistence);
 			const result = await signInWithPopup(auth, provider);
 			const user = result.user;
-			console.log("Logged in user:", user);
+
+			// GitHubアクセストークンを取得
+			const credential = GithubAuthProvider.credentialFromResult(result);
+			const githubToken = credential?.accessToken;
+
+			if (githubToken) {
+				// アクセストークンをlocalStorageに保存
+				localStorage.setItem("githubToken", githubToken);
+				console.log("GitHub Token stored in localStorage:", githubToken);
+			}
+
 			setUser(user);
 		} catch (err) {
 			console.error("GitHub Login Error:", err);
