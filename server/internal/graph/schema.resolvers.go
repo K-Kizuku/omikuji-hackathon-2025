@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"time"
 
+	"errors"
+
 	"github.com/K-Kizuku/pymon-graphql/internal/graph/model"
+	"github.com/K-Kizuku/pymon-graphql/internal/middlewares/auth"
 )
 
 // User is the resolver for the user field.
@@ -69,8 +72,11 @@ func (r *pythonStatsResolver) Skills(ctx context.Context, obj *model.PythonStats
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	// TODO: 認証からuserIDを取得する
-	user, err := r.UserRepository.GetUserByID(ctx, "1")
+	userID, ok := auth.GetUserID(ctx)
+	if !ok {
+		return nil, errors.New("user id not found")
+	}
+	user, err := r.UserRepository.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
